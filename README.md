@@ -1,3 +1,3 @@
-# Diseño Digital de DSP
+# Diseño Digital para Sistemas DSP
 
-Repositorio relacionado al contenido del curso de Diseño Digital de DSP de Marvell.
+Repositorio relacionado al contenido del curso de Diseño Digital para Sistemas DSP de Marvell.
