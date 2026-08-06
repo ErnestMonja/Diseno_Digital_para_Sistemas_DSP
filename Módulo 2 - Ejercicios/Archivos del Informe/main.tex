@@ -101,7 +101,8 @@ Se implementó en Verilog un registro con las siguientes características:
     \item Clock enable síncrono, activo por alto.
 \end{itemize}
 
-Luego, se simuló el diseño con un testbench que aplica 10 vectores. Los resultados se muestran a continuación.
+Este registro es básicamente un Flip-Flop D, es decir, actualiza la salida al valor de la entrada con cada flanco ascendente de reloj, solo si el CE está activo.
+Se simuló el diseño con un testbench que aplica 10 vectores y compara la salida \texttt{q} con la salida teórica. Los resultados fueron correctos, mostrándose a continuación.
 
 \begin{verbatim}
 Tiempo  |                     
@@ -173,7 +174,7 @@ El detector se comporta según el diagrama de estados de la \autoref{fig:fig_4} 
     \label{fig:fig_4}
 \end{figure}
 
-En el testbench se produjo la salida a continuación:
+En el testbench produjo la salida a continuación:
 
 \begin{verbatim}
 Tiempo  |                                                   
@@ -197,7 +198,7 @@ Tiempo  |
   275ns | x = 1          y(esperado) = 1         y(obtenido) = 1
 \end{verbatim}
 
-
+Se puede observar que el diseño contempla correctamente todos los casos de prueba y posee la característica de superposición que se solicitó en el ejercicio, es decir, el último 1 de una secuencia ``101'' es el primer elemento de una próxima secuencia ``101'' potencial.
 
 
 \subsection{Pipeline 3-etapas con Valid/Ready}                      \label{sec_2.5}
@@ -235,14 +236,70 @@ A partir del análisis temporal, se confirma el correcto comportamiento del fluj
 
 \subsection{Debugging de Latch Oculto}                              \label{sec_2.6}
 
+Para este caso, se analizó un código que genera un latch a la hora de la síntesis, es decir, una lógica combinacional que almacena un dato. 
 
+\begin{verbatim}
+always @(*) begin
+    case (op)
+        2'b00: y = a + b;
+        2'b01: y = a - b;
+        2'b10: y = a & b;
+    endcase
+end
+\end{verbatim}
 
+Se trata de una ALU donde uno de los valores del selector de función no realiza ningún cambio, es decir, la salida no está asignada en este valor. Los latches no están permitidos a la hora de diseñar, ya que pueden traer consecuencias como la metaestabilidad.
+
+Se desarrollaron dos archivos en verilog: uno donde se asigna la salida en el caso \emph{default} del case y otro donde se lo asigna justo cuando se entra al bloque \emph{always}. Esta salida es una OR entre \texttt{a} y \texttt{b}. Luego se compararon los tres códigos con un testbench que inyecta 64 casos de entrada para cada valor del selector:
+
+\begin{verbatim}
+for (i = 0; i < 4; i = i + 1) begin
+    for (j = 0; j < 64; j = j + 1) begin
+        #10
+        op = i;
+        a = 8'h00 + j;
+        b = 8'h01 + j;
+    end
+end
+\end{verbatim}
+
+Una porción de los resultados se muestra a continuación:
+
+\begin{verbatim}
+a = 3d  b = 3e  op = 2  y(latch) = 3c  y(default) = 3c  y(pre-assign) = 3c
+a = 3e  b = 3f  op = 2  y(latch) = 3e  y(default) = 3e  y(pre-assign) = 3e
+a = 3f  b = 40  op = 2  y(latch) = 00  y(default) = 00  y(pre-assign) = 00
+a = 00  b = 01  op = 3  y(latch) = 00  y(default) = 01  y(pre-assign) = 01
+a = 01  b = 02  op = 3  y(latch) = 00  y(default) = 03  y(pre-assign) = 03
+a = 02  b = 03  op = 3  y(latch) = 00  y(default) = 03  y(pre-assign) = 03
+\end{verbatim}
+
+Se observa que el último valor que adquiere \texttt{y} es 00, y cuando el selector \texttt{op} cambia al valor sin asignar, \texttt{y} se mantiene almacenado como \texttt{00}. Al no haber declarado ninguna logica de reloj, esto implica en la generación de un latch. Este fenómeno no ocurre así con los otros dos casos, donde \texttt{y} sí tiene asignado un valor para ese selector.
+
+Si se sintetizan los tres diseño con Yosys, se puede observar en los reportes la generación del latch. El reporte para el caso de la ALU con latch muestra
+
+\begin{verbatim}
+5.8. Executing PROC_DLATCH pass (convert process syncs to latches).                                                               
+Latch inferred for signal `\alu_bad.\y' from process `\alu_bad.$proc$/
+home/user/openlane2/designs/alu_bad/src/alu_bad.v:15$1':   
+$auto$proc_dlatch.cc:433:proc_dlatch$10   
+\end{verbatim}
+
+\noindent
+mientras que en los otros dos casos, el reporte muestra
+
+\begin{verbatim}
+5.8. Executing PROC_DLATCH pass (convert process syncs to latches).                                                               
+No latch inferred for signal `\alu_fix1.\y' from process                                                                          
+`\alu_fix1.$proc$/home/ruben/openlane2/designs/alu_fix1/src/
+alu_fix1.v:13$1'.  
+\end{verbatim}
 
 \section{Conclusiones}                                              \label{sec_3}
-[Completar]
 
-
+Los ejercicios documentados cubren los principales fundamentos del diseño de hardware en RTL. Se observó la importancia de distinguir las asignaciones \emph{bloqueante} y \emph{no bloqueante} para evitar condiciones de carrera. Luego, se desarrollaron distintas arquitecturas digitales tales como un contador BCD, un pipeline con handshake AXI-Stream, etc. y finalmente se realizó un debbuging de un latch oculto. Todo esto fue verificado mediante testbenches, comparando módulos y observando formas de onda resultantes utilizando GTKWave.
 
 \newpage
+\nocite{*}
 \printbibliography[heading=bibintoc, title={4. \ Referencias}]
 \end{document}
