@@ -1,0 +1,117 @@
+#! /usr/bin/vvp
+:ivl_version "12.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 12;
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/system.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_sys.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_textio.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2005_math.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/va_math.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2009.vpi";
+S_0x62923efa2270 .scope package, "$unit" "$unit" 2 1;
+ .timescale 0 0;
+S_0x62923efb4c10 .scope module, "tb_recorte" "tb_recorte" 3 3;
+ .timescale -9 -12;
+v0x62923efcb3b0_0 .var/s "x_in", 9 0;
+v0x62923efcb490_0 .net/s "x_round", 6 0, L_0x62923efdbbe0;  1 drivers
+v0x62923efcb530_0 .net/s "x_trunc", 6 0, L_0x62923efcb810;  1 drivers
+v0x62923efcb5d0_0 .var/s "y_in", 10 0;
+v0x62923efcb6a0_0 .net/s "y_sat", 4 0, L_0x62923efdbaa0;  1 drivers
+v0x62923efcb740_0 .net/s "y_wrap", 4 0, L_0x62923efdbd50;  1 drivers
+S_0x62923efb4da0 .scope module, "dut" "recorte" 3 15, 4 1 0, S_0x62923efb4c10;
+ .timescale 0 0;
+    .port_info 0 /INPUT 10 "x_in";
+    .port_info 1 /INPUT 11 "y_in";
+    .port_info 2 /OUTPUT 7 "x_trunc";
+    .port_info 3 /OUTPUT 7 "x_round";
+    .port_info 4 /OUTPUT 5 "y_wrap";
+    .port_info 5 /OUTPUT 5 "y_sat";
+L_0x62923efdbaa0 .functor BUFZ 5, v0x62923efcb130_0, C4<00000>, C4<00000>, C4<00000>;
+v0x62923ef77500_0 .net/s *"_ivl_2", 10 0, L_0x62923efcb950;  1 drivers
+L_0x79846dd28018 .functor BUFT 1, C4<00000000100>, C4<0>, C4<0>, C4<0>;
+v0x62923efcaae0_0 .net/2s *"_ivl_4", 10 0, L_0x79846dd28018;  1 drivers
+v0x62923efcabc0_0 .net/s "x_in", 9 0, v0x62923efcb3b0_0;  1 drivers
+v0x62923efcac80_0 .net/s "x_round", 6 0, L_0x62923efdbbe0;  alias, 1 drivers
+v0x62923efcad60_0 .net/s "x_round_temp", 10 0, L_0x62923efdba00;  1 drivers
+v0x62923efcae90_0 .net/s "x_trunc", 6 0, L_0x62923efcb810;  alias, 1 drivers
+v0x62923efcaf70_0 .net/s "y_in", 10 0, v0x62923efcb5d0_0;  1 drivers
+v0x62923efcb050_0 .net/s "y_sat", 4 0, L_0x62923efdbaa0;  alias, 1 drivers
+v0x62923efcb130_0 .var/s "y_sat_reg", 4 0;
+v0x62923efcb210_0 .net/s "y_wrap", 4 0, L_0x62923efdbd50;  alias, 1 drivers
+E_0x62923efb2c80 .event anyedge, v0x62923efcaf70_0;
+L_0x62923efcb810 .part v0x62923efcb3b0_0, 3, 7;
+L_0x62923efcb950 .extend/s 11, v0x62923efcb3b0_0;
+L_0x62923efdba00 .arith/sum 11, L_0x62923efcb950, L_0x79846dd28018;
+L_0x62923efdbbe0 .part L_0x62923efdba00, 3, 7;
+L_0x62923efdbd50 .part v0x62923efcb5d0_0, 3, 5;
+    .scope S_0x62923efb4da0;
+T_0 ;
+    %wait E_0x62923efb2c80;
+    %load/vec4 v0x62923efcaf70_0;
+    %parti/s 1, 10, 5;
+    %cmpi/e 0, 0, 1;
+    %flag_get/vec4 4;
+    %jmp/0 T_0.2, 4;
+    %load/vec4 v0x62923efcaf70_0;
+    %parti/s 3, 7, 4;
+    %pushi/vec4 0, 0, 3;
+    %cmp/ne;
+    %flag_get/vec4 4;
+    %and;
+T_0.2;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.0, 8;
+    %pushi/vec4 15, 0, 5;
+    %store/vec4 v0x62923efcb130_0, 0, 5;
+    %jmp T_0.1;
+T_0.0 ;
+    %load/vec4 v0x62923efcaf70_0;
+    %parti/s 1, 10, 5;
+    %cmpi/e 1, 0, 1;
+    %flag_get/vec4 4;
+    %jmp/0 T_0.5, 4;
+    %load/vec4 v0x62923efcaf70_0;
+    %parti/s 3, 7, 4;
+    %pushi/vec4 7, 0, 3;
+    %cmp/ne;
+    %flag_get/vec4 4;
+    %and;
+T_0.5;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.3, 8;
+    %pushi/vec4 16, 0, 5;
+    %store/vec4 v0x62923efcb130_0, 0, 5;
+    %jmp T_0.4;
+T_0.3 ;
+    %load/vec4 v0x62923efcaf70_0;
+    %parti/s 5, 3, 3;
+    %store/vec4 v0x62923efcb130_0, 0, 5;
+T_0.4 ;
+T_0.1 ;
+    %jmp T_0;
+    .thread T_0, $push;
+    .scope S_0x62923efb4c10;
+T_1 ;
+    %vpi_call/w 3 25 "$dumpfile", "recorte.vcd" {0 0 0};
+    %vpi_call/w 3 26 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x62923efb4c10 {0 0 0};
+    %pushi/vec4 0, 0, 10;
+    %store/vec4 v0x62923efcb3b0_0, 0, 10;
+    %pushi/vec4 0, 0, 11;
+    %store/vec4 v0x62923efcb5d0_0, 0, 11;
+    %delay 10000, 0;
+    %pushi/vec4 89, 0, 10;
+    %store/vec4 v0x62923efcb3b0_0, 0, 10;
+    %pushi/vec4 560, 0, 11;
+    %store/vec4 v0x62923efcb5d0_0, 0, 11;
+    %delay 20000, 0;
+    %vpi_call/w 3 41 "$display", "Simulaci\303\263n terminada. Revisar el VCD en GTKWave." {0 0 0};
+    %vpi_call/w 3 42 "$finish" {0 0 0};
+    %end;
+    .thread T_1;
+# The file index is used to find the file name in the following table.
+:file_names 5;
+    "N/A";
+    "<interactive>";
+    "-";
+    "tb_recorte.v";
+    "recorte.v";
