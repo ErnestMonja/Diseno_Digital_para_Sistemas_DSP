@@ -48,16 +48,17 @@
     {\Large Diseño Digital para Sistemas DSP} \\[0.5cm]
 
     \rule{\textwidth}{0.5pt} \\[0.5cm]
-    {\Large \textbf{Ejercicios Módulo 2: HDL — Sistemas Secuenciales y Combinacionales} \\[0.3cm]}
+    {\Large \textbf{Ejercicios Módulo 3: Codificación Numérica} \\[0.3cm]}
     \rule{\textwidth}{0.5pt} \\[1cm]
     
+\vfill
 \begin{tabular}{l l}
     \textbf{Profesor:} & Del Barco, Martín.\\
     \\[0.5cm]
     \textbf{Alumnos:} & Monja, Ernesto Joaquín\\
                       & Zúñiga, Guillermo Rubén Darío\\
 \end{tabular} \\[5cm]
-
+\vfill
 {\centering Año 2026 \par}
 
 \end{titlepage}
@@ -141,7 +142,45 @@ El error de cuantización se produce cuando la cantidad de bits fraccionales del
 
 
 \subsection{Suma en Punto Fijo}                                     \label{sec_2.2}
-[Completar]
+
+Para esta sección se calculó la suma de dos valores en punto fijo. Estos valores son:
+
+\begin{itemize}
+    \item $A = -1.75$ en S(6,4)
+    \item $B = 0.9375$ en S(8,5)
+\end{itemize}
+
+Para obtener el resultado $S$, se deben alinear los operandos para tener la coma implícita en la misma posición, luego se expanden los bits fraccionales y el signo del operando con menor cantidad de bits. Así, se tiene una suma de dos valores con el mismo formato, pero con un bit más en el resultado para abarcar el carry.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{r|ccccccccc}
+         A && \color{red}1 & 1 & 0. & 0 & 1 & 0 & 0 & \color{red}0 \\
+         B && 0 & 0 & 0. & 1 & 1 & 1 & 1 & 0 \\
+         \hline
+         S &1 & 1 & 1 & 1. & 0 & 0 & 1 & 1 & 0 \\
+    \end{tabular}
+    \caption{Suma de A y B, expandiendo el formato de A.}
+    \label{tab:suma}
+\end{table}
+
+Se realizó el código de esta suma en Python y Verilog. El resultado en Python imprime lo mostrado en la \autoref{fig:suma_py}, coincidiendo la suma en binario con la suma en punto flotante y en decimal. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figuras/suma_py.png}
+    \caption{Salida del script de suma en Python.}
+    \label{fig:suma_py}
+\end{figure}
+
+Por otro lado, el resultado del testbench de la suma en Verilog se muestra en la \autoref{fig:suma_sv}. observándose entonces que el resultado de los dos desarrollos concuerdan con el resultado esperado en forma teórica.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figuras/suma_sv.png}
+    \caption{Impresión del testbench de suma.}
+    \label{fig:suma_sv}
+\end{figure}
 
 
 
@@ -162,12 +201,12 @@ En la \autoref{fig:fig_1} se observa la salida de la terminal, detallando los re
     \label{fig:fig_1}
 \end{figure}
 
-Por otro lado, dado que se programo tanto un modulo como un testbench en \textit{Verilog} se propone graficar estos cambios utilizando \textit{GTKWave} tal como se muestra en la \autoref{fig:fig_3}. 
+Por otro lado, dado que se programo tanto un modulo como un testbench en \textit{Verilog} se propone graficar estos cambios utilizando \textit{GTKWave} tal como se muestra en la \autoref{fig:fig_2}. 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{Figura 2.png}
     \caption{Simulación en GTKWave mostrando las señales de entrada y salida en formato hexadecimal.}
-    \label{fig:fig_3}
+    \label{fig:fig_2}
 \end{figure}
 
 Al analizar las formas de onda, se corroboran los siguientes resultados:
@@ -181,10 +220,54 @@ Los resultados obtenidos en la simulación temporal coinciden con total exactitu
 
 
 
-\subsection{CSD — recodificación}                                   \label{sec_2.4}
-[Completar]
+\subsection{CSD — Recodificación}                                   \label{sec_2.4}
 
+La representación \emph{Canonical Signed Digit} (CSD) es un método utilizado en DSP que ofrece una optimización en la cantidad de sumadores cuando se requiere hacer una multiplicación por una constante, en algunos casos. Esto conlleva a disminuir el área y la potencia, pero la constante debe tener varios unos consecutivos para obtener una mejora significativa.
 
+Se realizó la multiplicación de una señal variable y signada con el valor $K = 23$, en binario estándar y en CSD. La conversión de $K$ a CSD se muestra en la \autoref{tab:csd}. De esta forma, se obtiene un coeficiente sin no-ceros consecutivos y se espera que la cantidad de sumas realizadas en una multiplicación pasen de 3 a 2.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{r|cccccc}
+         Binario & 0 & 1 & 0 & \color{red}1 & \color{red}1 & \color{red}1 \\
+          & 0 & \color{red}1 & \color{red}1 & 0 & 0 & -1 \\
+         CSD & 1 & 0 & -1 & 0 & 0 & -1 \\
+    \end{tabular}
+    \caption{Conversión del valor K a CSD.}
+    \label{tab:csd}
+\end{table}
+
+Realizando la multiplicación de K por una señal S(4,0) en Python, se obtiene el resultado de la \autoref{fig:csd_py}. Si se observa el código de la multiplicación en la \autoref{fig:csd_sumas_py}, se puede ver que se redujo la cantidad de sumadores como se esperó, ya que se usaron 3 sumas en el caso del binario estándar y 2 sumas en el caso del CSD.
+
+La implementación del módulo en Verilog se realizó con el mismo algoritmo y el testbench arrojó los mismos resultados que el algoritmo de Python. Estos se muestran en la \autoref{fig:csd_sv}. Nuevamente, en el RTL se comprueba la reducción de sumadores, como se muestra en la \autoref{fig:csd_sumas_sv}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figuras/csd_py.png}
+    \caption{Resultado impreso de la multiplicación en binario estándar y con CSD en Python.}
+    \label{fig:csd_py}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figuras/csd_sumas_py.png}
+    \caption{Asignación de la multiplicación en Python.}
+    \label{fig:csd_sumas_py}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figuras/csd_sv.png}
+    \caption{Resultado del testbench, en binario estándar y con CSD en Verilog.}
+    \label{fig:csd_sv}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figuras/csd_sumas_sv.png}
+    \caption{Asignación de la multiplicación en Verilog.}
+    \label{fig:csd_sumas_sv}
+\end{figure}
 
 \subsection{Booth \texttt{radix-2}}                                 \label{sec_2.5}
 En este ejercicio se implementó un multiplicador por \textit{HW} utilizando el algoritmo de \textit{Booth} \texttt{radix-2}. El objetivo consistió en realizar el producto de dos números signados de $4$ bits representados en complemento a $2$: el multiplicando $A = +6$ y el multiplicador $B = -5$. 
@@ -218,20 +301,48 @@ De esta manera, se comprueba que el comportamiento del \textit{HW} diseñado coi
 
 
 
-\subsection{RNS — multiplicación modular}                           \label{sec_2.6}
-[Completar]
+\subsection{RNS — Multiplicación Modular}                           \label{sec_2.6}
 
+El sistema de representación \emph{Residue Number System} (RNS) consiste en representar un número entero por sus residuos respecto a valores coprimos, resultando en varias operaciones más pequeñas en paralelo y sin propagación de carry. Esto puede aumentar el area pero permite un paralelismo muy alto.
 
+Tomando dos ejemplos, se representaron dos valores $X$ e $Y$ en RNS, tomando el conjunto de módulos $\{3,5,7\}$, y luego se realizó el producto en cada módulo. El desarrollo en forma teórica se muestra en el \autoref{tab:rns}.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l|ccc}
+        & Mod. 3 & Mod. 5 & Mod. 7 \\
+        $X = 14$ & 2 & 4 & 0 \\
+        $Y = 6$ & 0 & 1 & 6 \\
+        \hline
+        $P = 84$ & 0 & 4 & 0 \\
+    \end{tabular}
+    \caption{Multiplicación modular entre X e Y.}
+    \label{tab:rns}
+\end{table}
+
+En Python se armó un vector de valores modulares para cada variable y se realizó el producto modular. El resultado se puede ver en la \autoref{fig:rns_py}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.2\textwidth]{Figuras/rns_py.png}
+    \caption{Resultado del producto modular en Python.}
+    \label{fig:rns_py}
+\end{figure}
+
+Mientras tanto, en Verilog no se utilizó un arreglo de valores modulares, sino que se usaron 3 variables internas para cada señal, cada una con distinto número de bits para optimizar el área. Para la multiplicación modular, se utilizó el operador ``\%'', que no es sintetizable pero es útil para observar este caso en particular. El resultado puede observarse en la \autoref{fig:rns_sv} y se comprueba el resultado correcto en comparación con el teórico.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Figuras/rns_sv.png}
+    \caption{Resultado del producto modular en Verilog.}
+    \label{fig:rns_sv}
+\end{figure}
 
 \section{Conclusiones}                                              \label{sec_3}
-[Completar]
 
-
+Este trabajo presenta la implementación de varias formas de representación y calculo numérico en un DSP, desarrolladas tanto en Python como en Verilog. Se realizó la conversión en formato de punto flotante y punto fijo, en algunos casos sin pérdida de cuantización pero en otros con necesidad de aplicar truncamiento y/o saturación. Se estudiaron pocos casos de suma y producto en punto fijo pero con el objetivo de explorar varios tipos de representación, en este caso el CSD, Booth radix-2 y RNS. En todos los casos, los modelos de Python y Verilog coincidieron perfectamente.
 
 \newpage
 \nocite{*}
 \printbibliography[heading=bibintoc, title={4. \ Referencias}]
-\end{document}
-
-
 \end{document}
