@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")"
 
 echo ">>> Compilando con iverilog..."
-iverilog -g2012 -o sim.out tb_cla.sv cla4.sv 
+iverilog -g2012 -o sim.out tb_cla.sv cla16.sv cla4.sv
 
 echo ">>> Ejecutando con vvp..."
 vvp sim.out

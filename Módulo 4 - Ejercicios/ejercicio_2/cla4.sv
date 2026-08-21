@@ -14,44 +14,47 @@ logic [NB+1 -1 : 0] c;  // Carry
 logic [NB   -1 : 0] g;  // Generate
 logic [NB   -1 : 0] p;  // Propagate
 
-integer i;
+// --- Para ver los tiempos de propagacion ---
 
-always_comb begin : suma
-    // Bloque generate/propagate
-    g = a & b;
-    p = a ^ b;
+logic [NB   -1 : 0] p_and_c_temp; // p & c
 
-    // Logica CLA
-    c[0] = ci;
-    for (i = 1; i < NB + 1; i = i + 1) begin
-        c[i] = g[i-1] | (p[i-1] & c[i-1]);
-    end
+// Bloque generate/propagate
+assign #1 g = a & b;
+assign #1 p = a ^ b;
+assign c[0] = ci;
 
-end
+// Logica CLA
+// assign #1 p_and_c_temp = p & c;
+assign #1 c[NB:1] = g | (p & c);
 
 // Logica suma
-assign s = p ^ c[NB-1:0];
+assign #1 s = p ^ c[NB-1:0];
 assign co = c[NB];
 
 // Generate y propagate global
-assign pg = &p;
-assign gg = g[3] | (p[3] & g[2]) | (p[3] & p[2] & g[1]) | (p[3] & p[2] & p[1] & g[0]); // Parametrizar esto
+assign #1 pg = &p;
+assign #1 gg = g[3] | (p[3] & g[2]) | (p[3] & p[2] & g[1]) | (p[3] & p[2] & p[1] & g[0]); // Parametrizar esto
 
-// // --- Para ver los tiempos de propagacion ---
+// integer i;
 
-// logic [NB   -1 : 0] p_and_c_temp; // p & c
+// always_comb begin : suma
+//     // Bloque generate/propagate
+//     g = a & b;
+//     p = a ^ b;
 
-// // Bloque generate/propagate
-// assign #1 g = a & b;
-// assign #1 p = a ^ b;
-// assign c[0] = ci;
-
-// // Logica CLA
-// assign #1 p_and_c_temp = p & c;
-// assign #1 c[NB:1] = g | p_and_c_temp;
+//     // Logica CLA
+//     c[0] = ci;
+//     for (i = 1; i < NB + 1; i = i + 1) begin
+//         c[i] = g[i-1] | (p[i-1] & c[i-1]);
+//     end
+// end
 
 // // Logica suma
-// assign #1 s = p ^ c[NB-1:0];
-// assign #1 co = c[NB];
+// assign s = p ^ c[NB-1:0];
+// assign co = c[NB];
+
+// // Generate y propagate global
+// assign pg = &p;
+// assign gg = g[3] | (p[3] & g[2]) | (p[3] & p[2] & g[1]) | (p[3] & p[2] & p[1] & g[0]); // Parametrizar esto
 
 endmodule

@@ -2,34 +2,34 @@
 
 module tb_cla();
 
-parameter NB = 4;
+parameter NB = 16; // N bits en total
+parameter N_GROUPS = 4; // N grupos
 
 logic [NB-1 : 0] a ; // Sumando A
 logic [NB-1 : 0] b ; // Sumando B
 logic            ci; // Carry in
 logic [NB-1 : 0] s ; // Resultado
 logic            co; // Carry out
-logic [NB-1 : 0] pg; // Group propagate
-logic [NB-1 : 0] gg; // Group generate
+logic  pg; // Group propagate
+logic  gg; // Group generate
 
 integer i;
 integer j;
 integer test_count;
 integer test_error;
 
-cla4
+cla16
 #(
-    .NB(NB)
+    .NB(NB),
+    .N_GROUPS(N_GROUPS)
 )
-u_cla4
+cla16_u
 (
     .a (a ),
     .b (b ),
     .ci(ci),
     .s (s ),
-    .co(co),
-    .pg(pg),
-    .gg(gg)
+    .co(co)
 );
 
 logic [NB-1 : 0] test_s;
@@ -50,7 +50,7 @@ initial begin
     $dumpvars(0, tb_cla);
     test_count = 0;
     test_error = 0;
-
+    
     // Todo 0
     a = {NB{1'b0}};
     b = {NB{1'b0}};
@@ -71,42 +71,28 @@ initial begin
 
     // Cout 1
     #20
-    a = 4'd6;
-    b = 4'd12;
+    a = 16'd6;
+    b = 16'd12;
     ci = 1'b0;
 
     // Cout 1 y Cin 1
     #20
-    a = 4'd6;
-    b = 4'd12;
+    a = 16'd6;
+    b = 16'd12;
     ci = 1'b1;
 
     // Cout 0 y Cin 0
     #20
-    a = 4'd5;
-    b = 4'd5;
+    a = 16'd5;
+    b = 16'd5;
     ci = 1'b0;
 
-    // Todos los casos posibles
-
-    // Carry in 0
-    for (i = 0; i < 16; i = i + 1) begin
-        for (j = 0; j < 16; j = j + 1) begin
-            #20
-            ci = 1'b0;
-            a = i;
-            b = j;
-        end
-    end
-
-    // Carry in 1
-    for (i = 0; i < 16; i = i + 1) begin
-        for (j = 0; j < 16; j = j + 1) begin
-            #20
-            ci = 1'b1;
-            a = i;
-            b = j;
-        end
+    // 1000 casos random
+    repeat(1000) begin
+        #20
+        a = $urandom_range(2**NB-1); // [0,2^16-1]
+        b = $urandom_range(2**NB-1); // [0,2^16-1]
+        ci = $urandom_range(1); // [0,1]
     end
 
     #40
@@ -118,6 +104,7 @@ initial begin
         $display("Resultado: FAIL");
     $display("-------------------------");
     $finish;
+    // Usando delay en los gates: 8 gates de delay
 end
 
 endmodule
