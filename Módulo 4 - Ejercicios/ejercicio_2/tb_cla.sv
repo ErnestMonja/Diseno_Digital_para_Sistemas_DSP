@@ -57,7 +57,13 @@ initial begin
     ci = 1'b0;
 
     #5 // Delay para testear bien con el always de arriba
-    // Todo 1
+    // Cout 1
+    #20
+    a = {NB{1'b1}};
+    b = {NB{1'b0}};
+    ci = 1'b1;
+
+    // Todo 1, Cin 1
     #20
     a = {NB{1'b1}};
     b = {NB{1'b1}};
@@ -97,7 +103,7 @@ initial begin
 
     #40
     $display("-------------------------");
-    $display("Casos correctos: %3d/%3d", test_error, test_count);
+    $display("Errores cometidos: %3d/%3d", test_error, test_count);
     if (test_error == 0)
         $display("Resultado: PASS");
     else

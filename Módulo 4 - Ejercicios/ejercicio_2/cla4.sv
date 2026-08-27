@@ -16,7 +16,8 @@ logic [NB   -1 : 0] p;  // Propagate
 
 // --- Para ver los tiempos de propagacion ---
 
-logic [NB   -1 : 0] p_and_c_temp; // p & c
+// logic [NB   -1 : 0] p_and_c_temp; // p & c
+logic [NB-1 : 0] gg_aux; // Valor auxiliar para calcular el GG
 
 // Bloque generate/propagate
 assign #1 g = a & b;
@@ -33,7 +34,10 @@ assign co = c[NB];
 
 // Generate y propagate global
 assign #1 pg = &p;
-assign #1 gg = g[3] | (p[3] & g[2]) | (p[3] & p[2] & g[1]) | (p[3] & p[2] & p[1] & g[0]); // Parametrizar esto
+
+assign gg_aux[0] = g[0];
+assign #1 gg_aux[NB-1:1] = g[NB-1:1] | (p[NB-1:1] & gg_aux[NB-2:0]);
+assign gg = gg_aux[NB-1];
 
 // integer i;
 
